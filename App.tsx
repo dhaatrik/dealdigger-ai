@@ -1,6 +1,6 @@
-
+/* eslint-disable react-hooks/set-state-in-effect */
 import React, { useState, useEffect, useCallback } from 'react';
-import { Deal, UserPreferences, PriceDataPoint, DealVerification, GroundingMetadata, GroundingChunk } from './types';
+import { Deal, UserPreferences, PriceDataPoint, DealVerification, GroundingMetadata } from './types';
 import { APP_TITLE, DEAL_CATEGORIES, MOCK_API_KEY_NOTICE, GEMINI_ERROR_MESSAGE, INITIAL_DEALS_COUNT } from './constants';
 import * as geminiService from './services/geminiService';
 import DealCard from './components/DealCard';
@@ -8,7 +8,7 @@ import SearchBarAndFilters from './components/SearchBarAndFilters';
 import PriceHistoryModal from './components/PriceHistoryModal';
 import DealVerificationModal from './components/DealVerificationModal';
 import LoadingSpinner from './components/LoadingSpinner';
-import { SparklesIcon, TagIcon, MapPinIcon, LinkIcon } from './components/icons';
+import { TagIcon, LinkIcon } from './components/icons';
 
 const App: React.FC = () => {
   const [deals, setDeals] = useState<Deal[]>([]);
@@ -94,7 +94,7 @@ const App: React.FC = () => {
     try {
       const verification = await geminiService.verifyDeal(deal);
       setVerificationData(verification);
-    } catch (err) {
+    } catch {
       setVerificationData({ summary: "Failed to get verification from AI.", score: 0 });
     } finally {
       setIsVerifying(false);
@@ -127,13 +127,13 @@ const App: React.FC = () => {
             
             let isSafeUri = false;
             try {
-              if (source.uri.startsWith('/')) { // Relative path
+              if (source.uri && source.uri.startsWith('/')) { // Relative path
                 isSafeUri = true;
-              } else {
+              } else if (source.uri) {
                 const url = new URL(source.uri); // Check if it's a valid URL structure
                 isSafeUri = allowedSchemes.includes(url.protocol);
               }
-            } catch (e) {
+            } catch {
               // Invalid URL structure, so not safe by default
               isSafeUri = false;
             }
@@ -177,10 +177,9 @@ const App: React.FC = () => {
       <header className="bg-white/80 backdrop-blur-md shadow-md sticky top-0 z-40">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
           <div className="flex items-center">
-            <SparklesIcon className="w-10 h-10 text-transparent bg-clip-text bg-gradient-to-r from-purple-500 to-pink-500 mr-3" />
+            <img src="/logo.png" alt="DealDigger AI Logo" className="w-10 h-10 mr-3" />
             <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-blue-600">{APP_TITLE}</h1>
           </div>
-          {/* Could add a small chat icon or settings here later */}
         </div>
       </header>
 

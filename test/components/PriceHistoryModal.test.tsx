@@ -1,9 +1,9 @@
 // @vitest-environment jsdom
 import { render, screen, cleanup } from '@testing-library/react';
 import { afterEach, describe, it, expect, vi } from 'vitest';
-import React from 'react';
-import PriceHistoryModal from './PriceHistoryModal';
-import { Deal, PriceDataPoint } from '../types';
+
+import PriceHistoryModal from '../../components/PriceHistoryModal';
+import { Deal, PriceDataPoint } from '../../types';
 
 global.ResizeObserver = class ResizeObserver {
   observe() {}
@@ -32,36 +32,27 @@ const mockPriceHistory: PriceDataPoint[] = [
 ];
 
 describe('PriceHistoryModal', () => {
-  it('should be stable and NOT change prediction on re-render', () => {
-    // 1. Mock Math.random to return > 0.5 -> "likely to remain stable"
-    const randomSpy = vi.spyOn(Math, 'random');
-    randomSpy.mockReturnValue(0.6);
-
-    const { rerender } = render(
+  it('should render prediction based on deal id length', () => {
+    // mockDeal id is "deal-123" length 8 (even -> 0.6 -> likely to remain stable)
+    const { unmount } = render(
       <PriceHistoryModal
         deal={mockDeal}
         priceHistory={mockPriceHistory}
         onClose={() => {}}
       />
     );
-
-    // Initial check: Should show "stable"
     expect(screen.getByText(/likely to remain stable/i)).toBeDefined();
+    unmount();
 
-    // 2. Mock Math.random to return < 0.5 -> "showing good value" (if it were called)
-    randomSpy.mockReturnValue(0.4);
-
-    // 3. Rerender with same props
-    rerender(
-        <PriceHistoryModal
-        deal={mockDeal}
+    // Now test with an odd length id
+    const oddDeal = { ...mockDeal, id: 'deal-12' }; // length 7 (odd -> 0.4 -> showing good value)
+    render(
+      <PriceHistoryModal
+        deal={oddDeal}
         priceHistory={mockPriceHistory}
         onClose={() => {}}
       />
     );
-
-    // Verify: Expect text to REMAIN "likely to remain stable".
-    expect(screen.getByText(/likely to remain stable/i)).toBeDefined();
-    expect(screen.queryByText(/showing good value/i)).toBeNull();
+    expect(screen.getByText(/showing good value/i)).toBeDefined();
   });
 });

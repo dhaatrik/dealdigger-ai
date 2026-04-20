@@ -11,15 +11,17 @@ interface PriceHistoryModalProps {
 }
 
 const PriceHistoryModal: React.FC<PriceHistoryModalProps> = ({ deal, priceHistory, onClose }) => {
+  const prediction = React.useMemo(() => {
+    if (!deal) return "";
+    const randomVal = deal.id.length % 2 === 0 ? 0.6 : 0.4;
+    return randomVal > 0.5
+      ? " likely to remain stable in the short term."
+      : " showing good value. Consider purchasing soon if interested.";
+  }, [deal]);
+
   if (!deal) return null;
 
   const formatCurrency = (value: number) => `$${value.toFixed(2)}`;
-
-  const prediction = React.useMemo(() => {
-    return Math.random() > 0.5
-      ? " likely to remain stable in the short term."
-      : " showing good value. Consider purchasing soon if interested.";
-  }, [deal.id]);
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 transition-opacity duration-300">
