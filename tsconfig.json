@@ -12,6 +12,7 @@
     "allowImportingTsExtensions": true,
     "isolatedModules": true,
     "moduleDetection": "force",
+    "types": ["vite/client"],
     "noEmit": true,
     "allowJs": true,
     "jsx": "react-jsx",

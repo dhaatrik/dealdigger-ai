@@ -1,10 +1,9 @@
 
-import { GoogleGenAI, GenerateContentResponse, Chat, GroundingMetadata, Content } from "@google/genai";
-import { Deal, UserPreferences, DealVerification, GroundingChunk, PriceDataPoint } from '../types';
+import { GoogleGenAI, GenerateContentResponse, GroundingMetadata, Content } from "@google/genai";
+import { Deal, UserPreferences, DealVerification, PriceDataPoint } from '../types';
 import { GEMINI_MODEL_TEXT, INITIAL_DEALS_COUNT } from '../constants';
 
 let ai: GoogleGenAI | null = null;
-let chatInstance: Chat | null = null;
 
 const initializeAi = (): GoogleGenAI => {
   if (ai) return ai;
@@ -69,7 +68,7 @@ const parseJsonFromText = <T,>(text: string, isArrayExpected: boolean = false): 
     // Fallback 1: Iterative parsing for arrays (if an array is expected)
     if (isArrayExpected && jsonStr.startsWith('[') && jsonStr.endsWith(']')) {
       const arrayContent = jsonStr.substring(1, jsonStr.length - 1).trim();
-      const extractedObjects: any[] = [];
+      const extractedObjects: Record<string, unknown>[] = [];
 
       // Regex to match strings (ignoring escaped quotes) OR braces
       // This is more robust and faster than character-by-character iteration
@@ -81,21 +80,6 @@ const parseJsonFromText = <T,>(text: string, isArrayExpected: boolean = false): 
 
       while ((match = tokenRegex.exec(arrayContent)) !== null) {
         const token = match[0];
-
-        if (char === '"') {
-          let backslashCount = 0;
-          for (let j = i - 1; j >= 0; j--) {
-            if (arrayContent[j] === '\\') {
-              backslashCount++;
-            } else {
-              break;
-            }
-          }
-
-          if (backslashCount % 2 === 0) {
-            inString = !inString;
-          }
-        }
 
         if (token === '{') {
             if (depth === 0) {
@@ -110,7 +94,7 @@ const parseJsonFromText = <T,>(text: string, isArrayExpected: boolean = false): 
                 try {
                     const obj = JSON.parse(potentialObjStr);
                     extractedObjects.push(obj);
-                } catch (err) {
+                } catch {
                     // Ignore malformed object
                 }
                 startIndex = -1; // Reset
@@ -172,8 +156,8 @@ Example of one deal object:
     prompt += `\nProvide varied and appealing deals. If generating local deals, ensure the merchant name reflects that. Ensure the output is strictly a JSON array.`;
 
 
-    const contents: Content[] = [{ role: 'user', parts: [{ text: prompt }] }];
-    const config: any = { responseMimeType: "application/json" }; 
+    const config: Record<string, unknown> = { responseMimeType: "application/json" }; 
+    let finalPrompt = prompt;
     
     if (useSearchGrounding) {
         let searchQuery = "latest deals";
@@ -189,10 +173,12 @@ Example of one deal object:
         If price information is not available, you can state "Price varies" or omit price fields for that specific deal.
         Focus on concrete deals, not general advice.`;
         
-        contents[0].parts[0].text = searchPrompt;
+        finalPrompt = searchPrompt;
         config.tools = [{googleSearch: {}}];
         delete config.responseMimeType; 
     }
+
+    const contents: Content[] = [{ role: 'user', parts: [{ text: finalPrompt }] }];
 
 
     const response: GenerateContentResponse = await localAi.models.generateContent({
@@ -201,7 +187,8 @@ Example of one deal object:
       config: config,
     });
 
-    const parsedDeals = parseJsonFromText<Deal[]>(response.text, true); // Indicate that an array is expected
+    const responseText = response?.text ?? "";
+    const parsedDeals = parseJsonFromText<Deal[]>(responseText, true); // Indicate that an array is expected
     
     const dealsWithIds: Deal[] = (parsedDeals || []).map((deal, index) => ({
       ...deal,
@@ -211,8 +198,8 @@ Example of one deal object:
 
     const groundingMetadata = response.candidates?.[0]?.groundingMetadata as GroundingMetadata | undefined;
     
-    if (dealsWithIds.length === 0 && response.text.length > 5) { // If parsing failed but we got some text
-        console.warn("Failed to parse deals from AI response, but received text. Response text:", response.text.substring(0, 500));
+    if (groundingMetadata && groundingMetadata.groundingChunks && dealsWithIds.length === 0 && responseText.length > 5) { // If parsing failed but we got some text
+        console.warn("Failed to parse deals from AI response, but received text. Response text:", responseText.substring(0, 500));
     }
 
     return { deals: dealsWithIds, groundingMetadata };
@@ -251,9 +238,10 @@ Example output:
       config: { responseMimeType: "application/json" }
     });
 
-    const verificationResult = parseJsonFromText<DealVerification>(response.text, false); // Not an array
+    const responseText = response?.text ?? "";
+    const verificationResult = parseJsonFromText<DealVerification>(responseText, false); // Not an array
     if (!verificationResult) {
-      console.warn("Failed to parse deal verification from AI response. Response text:", response.text.substring(0, 500));
+      console.warn("Failed to parse deal verification from AI response. Response text:", responseText.substring(0, 500));
       return { summary: "AI could not verify this deal due to response format error.", score: 0 };
     }
     return verificationResult;
@@ -265,36 +253,6 @@ Example output:
   }
 };
 
-export const startChat = (): void => {
-  // Access Vite environment variables using import.meta.env
-  const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-  if (!apiKey) {
-    console.warn("VITE_GEMINI_API_KEY environment variable not found. Chat features will be disabled.");
-    return;
-  }
-  const localAi = initializeAi();
-  chatInstance = localAi.chats.create({
-    model: GEMINI_MODEL_TEXT,
-    config: {
-      systemInstruction: 'You are a helpful assistant for finding deals and shopping advice.'
-    }
-  });
-  console.log("Chat initialized");
-};
-
-export const sendMessageToChat = async (message: string): Promise<string> => {
-  if (!chatInstance) {
-    startChat(); 
-    if (!chatInstance) return "Chat not available. API Key might be missing.";
-  }
-  try {
-    const response: GenerateContentResponse = await chatInstance.sendMessage({ message: message });
-    return response.text;
-  } catch (error) {
-    console.error("Error sending chat message:", error);
-    return "Error communicating with chat AI.";
-  }
-};
 
 export const generateMockPriceHistory = (basePriceStr: string): PriceDataPoint[] => {
   const basePrice = parseFloat(basePriceStr?.replace('$', ''));

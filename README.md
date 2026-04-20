@@ -1,102 +1,110 @@
-
 # DealDigger AI
 
-DealDigger AI is an intelligent deal-hunting assistant that scours the web to unearth personalized, high-value deals tailored to your preferences. It uses advanced AI and machine learning to find deals from major e-commerce platforms to local ads.
+<div align="center">
+  <img src="public/logo.png" alt="DealDigger AI Logo" width="200" />
+</div>
 
-## Problem Addressed
 
-Shoppers often waste time and miss out on the best deals due to the overwhelming number of online offers, especially those that are hidden, region-specific, or require constant monitoring. DealDigger AI aims to solve this by automating the deal discovery process and personalizing recommendations.
+DealDigger AI is an intelligent deal-hunting assistant that scours the web to unearth personalized, high-value deals tailored to your preferences. Shoppers often waste time and miss out on the best deals due to the overwhelming number of online offers, especially those that are hidden or region-specific. DealDigger AI automates the deal discovery process by leveraging Google Gemini AI and Google Search grounding to curate, verify, and monitor the best deals, preventing deal-fatigue. 
 
-## Key Features
+---
 
-*   **Adaptive Deal Filtering**: Learns from user preferences (keywords, categories, location) to prioritize relevant offers.
-*   **AI-Generated Deals**: Leverages Google Gemini to generate realistic deal suggestions when real-time scraping isn't the focus.
-*   **Google Search Grounding**: Optionally uses Google Search via Gemini to find the latest, most current deals, providing source URLs for transparency.
-*   **Deal Verification**: Utilizes AI to assess the authenticity and value of deals, providing a summary and a confidence score.
-*   **Price History (Simulated)**: Shows a mock historical price trend for deals to help users decide the optimal time to buy.
-*   **Responsive UI**: A clean, modern, and responsive user interface built with React and Tailwind CSS.
-*   **Dynamic Filtering**: Users can filter deals by keywords, categories, and location.
+## Table of Contents
+- [Installation & Requirements](#installation--requirements)
+- [Usage Instructions & Examples](#usage-instructions--examples)
+- [Technologies Used](#technologies-used)
+- [Contribution Guidelines](#contribution-guidelines)
+- [Testing Instructions](#testing-instructions)
+- [License Information](#license-information)
+
+---
+
+## Installation & Requirements
+
+### Prerequisites
+- [Node.js](https://nodejs.org/) (v18 or higher recommended)
+- [Google Gemini API Key](https://aistudio.google.com/app/apikey)
+
+### Setup Steps
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/dhaatrik/dealdigger-ai.git
+   cd dealdigger-ai
+   ```
+2. **Install dependencies:**
+   ```bash
+   npm install
+   ```
+3. **Configure Environment Variables:**
+   Create a `.env.local` file in the root directory and add your Google Gemini API key:
+   ```env
+   VITE_GEMINI_API_KEY=your_google_gemini_api_key_here
+   ```
+4. **Run the Development Server:**
+   ```bash
+   npm run dev
+   ```
+   Open `http://localhost:5173` to view the application in your browser.
+
+---
+
+## Usage Instructions & Examples
+
+Upon launching the application, you can interact with DealDigger AI in several ways to find the best deals:
+
+1. **Search for Deals:** Enter keywords in the search bar (e.g., "gaming laptops") and click "Find Deals".
+2. **Apply Filters:** Open the filters panel to specify location scopes or categorize your search (e.g., Electronics, Fashion).
+3. **Enable Google Search Grounding:** Toggle the "Use Google Search" option for real-time deal fetching via Gemini. If disabled, AI will generate mock contextual deal suggestions.
+4. **Verify Deals:** On any generated deal card, click "Verify Deal" to let the AI assess the deal's authenticity and determine its value score.
+5. **Analyze Price History:** Click "Price History" on a deal card to open a modal exhibiting recent pricing charts to visually identify the optimum purchasing window.
+
+---
 
 ## Technologies Used
 
-*   **Frontend**:
-    *   React 19
-    *   TypeScript
-    *   Tailwind CSS
-    *   Recharts (for price history charts)
-*   **AI/Backend (via API)**:
-    *   Google Gemini API (`@google/genai`) for:
-        *   Generating deal content.
-        *   Verifying deal authenticity.
-        *   Grounding searches with Google Search for real-time deals.
-*   **Development Environment**:
-    *   ESM modules with `importmap` for browser-based dependency management.
-    *   `process.env.API_KEY` for Google Gemini API key (must be configured).
+DealDigger AI is built natively for speed and scalability using a modern web development stack:
 
-## Project Structure
+- **Frontend Framework:** React 19, TypeScript
+- **Styling:** Tailwind CSS
+- **Data Visualization:** Recharts (for price tracking tools)
+- **AI Integration:** `@google/genai` (Google Gemini API via Web SDK)
+- **Tooling & Build:** Vite, ESLint, Vitest, Node.js
 
+---
+
+## Contribution Guidelines
+
+Contributions are what make the open source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
+
+To contribute to this project:
+1. Fork the Project
+2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the Branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+*Please ensure your code builds and passes the CI test suite prior to opening a PR.* For detailed instructions, please refer to the [CONTRIBUTING.md](CONTRIBUTING.md) file at the root of the repository.
+
+---
+
+## Testing Instructions
+
+This project ensures high quality and regression safety through automated CI/CD checks powered by `Vitest` and `ESLint`.
+
+To run tests locally:
+```bash
+# Run unit tests
+npm run test
+
+# Run linter
+npm run lint
+
+# To perform a production build manually
+npm run build
 ```
-.
-├── README.md                // This file
-├── index.html               // Main HTML entry point, includes Tailwind CSS and importmap
-├── index.tsx                // React application entry point
-├── App.tsx                  // Main application component, manages state and UI layout
-├── metadata.json            // Application metadata
-├── types.ts                 // TypeScript type definitions
-├── constants.ts             // Application-wide constants
-├── components/              // React UI components
-│   ├── DealCard.tsx
-│   ├── DealVerificationModal.tsx
-│   ├── LoadingSpinner.tsx
-│   ├── PriceHistoryModal.tsx
-│   ├── SearchBarAndFilters.tsx
-│   └── icons.tsx            // SVG icons as React components
-└── services/
-    └── geminiService.ts     // Service for interacting with the Google Gemini API
-```
 
-## Setup and Running
+---
 
-1.  **Clone the repository (if applicable) or ensure all files are in the same directory.**
-2.  **Install Dependencies**: This project is configured to use Vite. You must install the dependencies from `package.json`.
-    ```bash
-    npm install
-    ```
-3.  **API Key Configuration**:
-    *   This application requires a Google Gemini API key to function with its AI features.
-    *   Vite handles environment variables securely. Create a file named `.env.local` in the project root.
-    *   Add your API key to this file, prefixed with `VITE_`:
-        ```.env.local
-        VITE_GEMINI_API_KEY=YOUR_API_KEY_HERE
-        ```
-    *   **Important**: You will need to update `services/geminiService.ts` to read this variable. Vite exposes it on `import.meta.env.VITE_GEMINI_API_KEY`, not `process.env.API_KEY`. You should change the line that retrieves the key to use `import.meta.env.VITE_GEMINI_API_KEY`.
-    *   If the `API_KEY` is not found, the application will fall back to displaying mock data and AI features like deal verification will be disabled or show an error.
+## License Information
 
-4.  **Run the Development Server**:
-    ```bash
-    npm run dev
-    ```
-    This command starts the Vite development server. Open your browser to the local URL it provides (e.g., `http://localhost:5173`) to see the application.
-
-## Using the Application
-
-*   Upon loading, the app will attempt to fetch initial deals using the Gemini API (or show mock deals if the API key is missing).
-*   Use the **search bar** to enter keywords for deals you're interested in.
-*   Optionally, provide a **location** to find region-specific or online deals accessible from there.
-*   Click the **"Filter by Categories"** button to expand the category selection and check the categories you want.
-*   Toggle the **"Use Google Search for latest deals"** switch if you want the AI to use Google Search for more current, real-world deals (this can be slower).
-*   Click **"Find Latest Deals (Web)"** to initiate a search using Google Search grounding.
-*   Click **"Find Deals (AI Generated)"** to get deals generated by the AI based on your prompt and preferences (without Google Search grounding).
-*   For each deal card:
-    *   Click **"Verify Deal"** to get an AI-powered assessment of the deal's authenticity and value.
-    *   Click **"Price History"** to view a (simulated) price chart for the item.
-*   If Google Search grounding was used, a list of **Sources** will appear below the search bar, linking to the web pages Gemini consulted.
-
-## Notes
-
-*   The price history feature currently uses mock data (`generateMockPriceHistory` in `geminiService.ts`).
-*   Deal image URLs are placeholder images from `picsum.photos`.
-*   The application prioritizes a clean, responsive, and accessible UI.
-*   Error handling is in place for API key issues and general Gemini API errors.
-
-This README provides a comprehensive overview of DealDigger AI. Enjoy finding great deals!
+This repository is licensed under the MIT License. You are free to use, distribute, and modify the contents of this repository according to the obligations set inside the `LICENSE` file.

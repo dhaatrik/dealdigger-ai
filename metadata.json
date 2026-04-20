@@ -1,6 +1,0 @@
-{
-  "name": "DealDigger AI",
-  "description": "An intelligent assistant for discovering personalized, high-value deals from across the web. Users can filter deals, verify authenticity with AI, and view price history.",
-  "requestFramePermissions": [],
-  "prompt": ""
-}
